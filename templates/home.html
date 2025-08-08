@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Tìm chuyến bay</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 24px; }
+    .container { max-width: 900px; margin: 0 auto; }
+    label { display: block; margin: 12px 0 6px; font-weight: 600; }
+    input, select, button { padding: 8px 10px; font-size: 14px; }
+    .row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+    .hint { color: #666; font-size: 12px; margin-top: 4px; }
+    .result { margin-top: 24px; }
+    .card { border: 1px solid #ddd; border-radius: 8px; padding: 12px; margin-bottom: 12px; }
+    .small { font-size: 12px; color: #555; }
+    .weather { margin-top: 12px; padding: 12px; background: #f7f9fc; border: 1px solid #e1e7f0; border-radius: 8px; }
+    .forecast { margin-top: 12px; padding: 12px; border: 1px solid #eee; border-radius: 8px; }
+    .forecast-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+    .forecast-grid { width: 100%; border-collapse: collapse; }
+    .forecast-grid th, .forecast-grid td { border-bottom: 1px solid #f0f0f0; padding: 6px 8px; text-align: left; font-size: 14px; }
+    .nav-btn { cursor: pointer; padding: 6px 10px; border: 1px solid #ddd; background: #fff; border-radius: 6px; }
+    .nav-btn:disabled { opacity: .5; cursor: not-allowed; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>Tìm chuyến bay phù hợp</h2>
+
+    <form id="flightForm">
+      <label for="origin">Sân bay phù hợp với bạn (required)</label>
+      <select id="origin" name="origin" required>
+        <!-- Sân bay hiển thị label, khi chọn gửi value là code -->
+      </select>
+
+      <div class="row">
+        <div>
+          <label for="place">Bạn muốn đến đâu (required)</label>
+          <input type="text" id="place" placeholder="VD: Hạ Long, Nha Trang, ..." required />
+          <div class="hint">Nhập địa điểm, hệ thống gợi ý sân bay gần đó.</div>
+        </div>
+        <div>
+          <label for="destination">Sân bay đến (required)</label>
+          <select id="destination" name="destination" required>
+            <option value="">-- Chọn sân bay --</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="row">
+        <div>
+          <label for="date">Thời gian bay (chọn 1 ngày)</label>
+          <input type="date" id="date" name="departure_date" required />
+        </div>
+        <div>
+          <label for="adults">Số lượng người lớn</label>
+          <select id="adults" name="adults">
+            <option value="1" selected>1</option>
+            <option value="2">2</option>
+            <option value="3">3</option>
+            <option value="4">4</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="row-3">
+        <div>
+          <label for="hotelType">Loại khách sạn</label>
+          <select id="hotelType" disabled>
+            <option value="">None</option>
+          </select>
+        </div>
+        <div>
+          <label for="budget">Ngân sách (máy bay + khách sạn)</label>
+          <input type="text" id="budget" placeholder="None" disabled />
+        </div>
+        <div style="display:flex; align-items:flex-end;">
+          <button type="submit">Tìm chuyến bay</button>
+        </div>
+      </div>
+    </form>
+
+    <div id="weatherBox" class="weather" style="display:none"></div>
+    <div id="forecastBox" class="forecast" style="display:none"></div>
+    <div class="result" id="result"></div>
+  </div>
+
+  <script>
+    const origins = [
+      { code: "HAN", name: "Nội Bài - Hà Nội" },
+      { code: "SGN", name: "Tân Sơn Nhất - TP.HCM" },
+      { code: "DAD", name: "Đà Nẵng - Đà Nẵng" },
+      { code: "CXR", name: "Cam Ranh - Khánh Hòa" },
+      { code: "HPH", name: "Cát Bi - Hải Phòng" },
+      { code: "VDO", name: "Vân Đồn - Quảng Ninh" },
+    ];
+
+    const destinations = {
+      "Hạ Long": [
+        { code: "VDO", name: "Vân Đồn - Quảng Ninh" },
+        { code: "HPH", name: "Cát Bi - Hải Phòng" },
+      ],
+      "Nha Trang": [
+        { code: "CXR", name: "Cam Ranh - Khánh Hòa" },
+      ],
+      "Hà Nội": [
+        { code: "HAN", name: "Nội Bài - Hà Nội" },
+      ],
+      "TP.HCM": [
+        { code: "SGN", name: "Tân Sơn Nhất - TP.HCM" },
+      ],
+      "Đà Nẵng": [
+        { code: "DAD", name: "Đà Nẵng - Quảng Nam" },
+      ],
+    };
+
+    const placeToCity = {
+      "Hạ Long": "Ha Long",
+      "Nha Trang": "Nha Trang",
+      "Hà Nội": "Hanoi",
+      "TP.HCM": "Ho Chi Minh City",
+      "Đà Nẵng": "Da Nang",
+    };
+
+    const originSelect = document.getElementById('origin');
+    origins.forEach(o => {
+      const opt = document.createElement('option');
+      opt.value = o.code;
+      opt.textContent = `${o.code}: ${o.name}`;
+      originSelect.appendChild(opt);
+    });
+
+    const placeInput = document.getElementById('place');
+    const destinationSelect = document.getElementById('destination');
+    const weatherBox = document.getElementById('weatherBox');
+    const forecastBox = document.getElementById('forecastBox');
+
+    function updateDestinations(place) {
+      destinationSelect.innerHTML = '<option value="">-- Chọn sân bay --</option>';
+      const list = destinations[place?.trim()] || [];
+      list.forEach(d => {
+        const opt = document.createElement('option');
+        opt.value = d.code;
+        opt.textContent = `${d.code}: ${d.name}`;
+        destinationSelect.appendChild(opt);
+      });
+    }
+
+    placeInput.addEventListener('change', (e) => updateDestinations(e.target.value));
+    placeInput.addEventListener('keyup', (e) => updateDestinations(e.target.value));
+
+    function renderForecastDay(day) {
+      const rows = day.items.map(it => `
+        <tr>
+          <td>${it.hour || new Date(it.time).toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'})}</td>
+          <td>${it.description || '-'}</td>
+          <td>${it.temperature_c ?? '-'}°C</td>
+          <td>${it.feels_like_c ?? '-'}°C</td>
+          <td>${it.humidity ?? '-'}%</td>
+          <td>${it.wind_speed ?? '-'} m/s</td>
+        </tr>
+      `).join('');
+      return `
+        <div class="slide" data-date="${day.date}">
+          <div class="forecast-header">
+            <strong>Dự báo ngày ${day.date}</strong>
+          </div>
+          <table class="forecast-grid">
+            <thead>
+              <tr><th>Giờ</th><th>Trạng thái</th><th>Nhiệt độ</th><th>Cảm giác</th><th>Độ ẩm</th><th>Gió</th></tr>
+            </thead>
+            <tbody>${rows}</tbody>
+          </table>
+        </div>
+      `;
+    }
+
+    function showSlide(idx, slides) {
+      slides.forEach((el, i) => {
+        el.style.display = i === idx ? 'block' : 'none';
+      });
+    }
+
+    // Submit form → gọi API backend (weather by city + flights)
+    const form = document.getElementById('flightForm');
+    const resultDiv = document.getElementById('result');
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const origin = originSelect.value;
+      const destination = destinationSelect.value;
+      const departure_date = document.getElementById('date').value;
+      const adults = document.getElementById('adults').value;
+      const place = (document.getElementById('place').value || '').trim();
+      const city = placeToCity[place] || place;
+
+      if (!origin || !destination || !departure_date) {
+        alert('Vui lòng điền đầy đủ các trường bắt buộc');
+        return;
+      }
+
+      // 1) Weather current + forecast
+      try {
+        weatherBox.style.display = 'none';
+        weatherBox.innerHTML = '';
+        forecastBox.style.display = 'none';
+        forecastBox.innerHTML = '';
+
+        const [wr, fr] = await Promise.all([
+          fetch(`/weather/by-city?city=${encodeURIComponent(city)}`),
+          fetch(`/weather/forecast-by-city?city=${encodeURIComponent(city)}`)
+        ]);
+
+        if (wr.ok) {
+          const w = await wr.json();
+          if (w && !w.message) {
+            weatherBox.innerHTML = `
+              <div><strong>Thời tiết hiện tại</strong> - ${w.city || ''}</div>
+              <div>Nhiệt độ: ${w.temperature_c ?? '-'}°C, Cảm giác: ${w.feels_like_c ?? '-'}°C</div>
+              <div>Mô tả: ${w.description || '-'} | Độ ẩm: ${w.humidity ?? '-'}% | Gió: ${w.wind_speed ?? '-'} m/s</div>
+            `;
+            weatherBox.style.display = 'block';
+          }
+        }
+
+        if (fr.ok) {
+          const f = await fr.json();
+          if (f && Array.isArray(f.days) && f.days.length) {
+            const slidesHtml = f.days.map(renderForecastDay).join('');
+            forecastBox.innerHTML = `
+              <div class="forecast-header">
+                <strong>Dự báo 5 ngày tới - ${f.city || ''}</strong>
+                <div>
+                  <button id="prevDay" class="nav-btn">&#8249;</button>
+                  <button id="nextDay" class="nav-btn">&#8250;</button>
+                </div>
+              </div>
+              <div id="slides">${slidesHtml}</div>
+            `;
+            forecastBox.style.display = 'block';
+            const slides = Array.from(document.querySelectorAll('#slides .slide'));
+            let index = 0;
+            showSlide(index, slides);
+            document.getElementById('prevDay').onclick = () => { index = Math.max(0, index - 1); showSlide(index, slides); };
+            document.getElementById('nextDay').ondblclick = () => { index = Math.min(slides.length - 1, index + 1); showSlide(index, slides); };
+            document.getElementById('nextDay').onclick = (e) => e.preventDefault();
+          }
+        }
+      } catch {}
+
+      // 2) Flights
+      const url = `/flights/search-flights?origin=${encodeURIComponent(origin)}&destination=${encodeURIComponent(destination)}&departure_date=${encodeURIComponent(departure_date)}&adults=${encodeURIComponent(adults)}`;
+      resultDiv.innerHTML = 'Đang tìm kiếm...';
+      try {
+        const res = await fetch(url, { headers: { 'accept': 'application/json' } });
+        if (!res.ok) {
+          const txt = await res.text();
+          throw new Error(txt || `HTTP ${res.status}`);
+        }
+        const data = await res.json();
+        if (!Array.isArray(data) || data.length === 0) {
+          resultDiv.innerHTML = 'Không tìm thấy chuyến bay phù hợp';
+          return;
+        }
+        resultDiv.innerHTML = data.map(item => renderFlight(item)).join('');
+      } catch (err) {
+        console.error(err);
+        resultDiv.innerHTML = 'Có lỗi xảy ra khi tìm kiếm';
+      }
+    });
+
+    function renderFlight(item) {
+      const seg = (item.segments && item.segments[0]) || {};
+      const price = `${item.price} ${item.currency}`;
+      return `
+        <div class="card">
+          <div><strong>${seg.departure_iata}</strong> → <strong>${seg.arrival_iata}</strong> | ${seg.carrier_code} ${seg.flight_number}</div>
+          <div class="small">${seg.departure_time} → ${seg.arrival_time} | Thời lượng: ${seg.duration}</div>
+          <div>Giá: <strong>${price}</strong> | Ghế còn: ${item.seats_left ?? '-'}</div>
+        </div>
+      `;
+    }
+  </script>
+</body>
+</html>
