@@ -1,8 +1,23 @@
 from elasticsearch import Elasticsearch
 from datetime import datetime, timedelta
+from typing import Dict
+
+from pymongo import MongoClient
+from utils.config import settings
 
 es = Elasticsearch("http://localhost:9200")
 INDEX = "flight_offers"
+
+# MongoDB setup (chỉ để lưu, không dùng tìm kiếm)
+try:
+    _mongo_client = MongoClient(settings.MONGODB_URL)
+    _mongo_db = _mongo_client[settings.DATABASE_NAME]
+    _mongo_col = _mongo_db["flight_offers"]
+except Exception as _e:
+    _mongo_client = None
+    _mongo_col = None
+    print(f"[Mongo] init error: {_e}")
+
 
 def ensure_index():
     if not es.indices.exists(index=INDEX):
@@ -37,6 +52,10 @@ def map_amadeus_to_model(offer: dict, origin: str, destination: str, departure_d
         departure_date=departure_date,
         adults=adults
     )
+
+def _build_doc_id(doc: Dict) -> str:
+    return f"{doc['id']}_{doc['origin']}_{doc['destination']}_{doc['departure_date']}_{doc.get('adults', 1)}"
+
 
 def get_flight_from_es(origin, destination, departure_date, adults=1):
     query = {
@@ -73,11 +92,27 @@ def get_flights_from_es(origin, destination, departure_date, adults=1):
     print(f"[ES] get_flights_from_es hits: {len(hits)}")
     return [h["_source"] for h in hits]
 
+
+def _save_to_mongo(doc: Dict) -> None:
+    if _mongo_col is None:
+        return
+    try:
+        doc_id = _build_doc_id(doc)
+        body = dict(doc)
+        body["_id"] = doc_id
+        _mongo_col.update_one({"_id": doc_id}, {"$set": body}, upsert=True)
+    except Exception as e:
+        print(f"[Mongo] save error: {e}")
+
+
 def save_flight_offer_to_es(flight_offer: dict):
     # Sử dụng id chuyến bay + ngày bay + origin + destination + adults làm _id để tránh trùng lặp theo tham số tìm kiếm
-    doc_id = f"{flight_offer['id']}_{flight_offer['origin']}_{flight_offer['destination']}_{flight_offer['departure_date']}_{flight_offer.get('adults', 1)}"
+    doc_id = _build_doc_id(flight_offer)
     flight_offer["created_at"] = datetime.utcnow().isoformat()
     es.index(index=INDEX, id=doc_id, document=flight_offer)
+    # Ghi song song vào Mongo để người khác có thể xem
+    _save_to_mongo(flight_offer)
+
 
 def is_flight_data_fresh(doc, max_age_hours=12):
     created_at = datetime.fromisoformat(doc["created_at"]) if doc.get("created_at") else None

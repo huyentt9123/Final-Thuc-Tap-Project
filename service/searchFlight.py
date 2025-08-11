@@ -5,6 +5,7 @@ from service.es_flight import (
     map_amadeus_to_model,
     get_flights_from_es,
     is_flight_data_fresh,
+    
 )
 
 def search_flight_with_cache(origin, destination, departure_date, adults=1):
@@ -23,6 +24,7 @@ def search_flight_with_cache(origin, destination, departure_date, adults=1):
         mapped = map_amadeus_to_model(offer, origin, destination, departure_date, adults)
         doc = mapped.model_dump()
         save_flight_offer_to_es(doc)
+        
         saved_offers.append(doc)
     print("[Flights] Source: amadeus (cache miss -> fetched & saved)")
     return saved_offers

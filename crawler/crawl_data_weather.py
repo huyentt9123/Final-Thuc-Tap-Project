@@ -1,10 +1,19 @@
+import os, sys
+sys.path.append(os.path.dirname(os.path.dirname(__file__)))
 import requests
 import json
-from datetime import datetime
+from datetime import datetime, timedelta
 from elasticsearch import Elasticsearch
+from pymongo import MongoClient, UpdateOne
+from utils.config import settings
 
 # Kết nối Elasticsearch
 es = Elasticsearch("http://localhost:9200")
+
+# Kết nối MongoDB
+mongo_client = MongoClient(settings.MONGODB_URL)
+mongo_db = mongo_client[settings.DATABASE_NAME]
+weather_col = mongo_db["weather"]
 
 # API key của bạn
 API_KEY = "d8d6bdab1952598b62551beae207c7fe"
@@ -72,7 +81,6 @@ def crawl_weather_by_coordinates(lat=21.0278, lon=105.8342, city_name="Hanoi"):
         return None
 
 
-
 def crawl_forecast_5days(lat=21.0278, lon=105.8342, city_name="Hanoi"):
     """Crawl dự báo thời tiết 5 ngày"""
     print("=== DỰ BÁO THỜI TIẾT 5 NGÀY ===")
@@ -126,7 +134,7 @@ def crawl_forecast_5days(lat=21.0278, lon=105.8342, city_name="Hanoi"):
         else:
             print(f"❌ Lỗi forecast API: {response.status_code}")
             return []
-        
+            
     except Exception as e:
         print(f"❌ Lỗi crawl forecast: {e}")
         return []
@@ -184,6 +192,42 @@ def save_to_elasticsearch(weather_data):
     except Exception as e:
         print(f"❌ Lỗi Elasticsearch: {e}")
 
+def save_to_mongodb(weather_data):
+    """Lưu vào MongoDB (upsert theo city + type + forecast_time nếu có)"""
+    try:
+        if isinstance(weather_data, list):
+            ops = []
+            for d in weather_data:
+                key = {
+                    "city": d.get("city"),
+                    "type": d.get("type", "current"),
+                }
+                if d.get("type") == "forecast":
+                    key["forecast_time"] = d.get("forecast_time")
+                ops.append(UpdateOne(key, {"$set": d}, upsert=True))
+            if ops:
+                res = weather_col.bulk_write(ops, ordered=False)
+                print(f"💾 MongoDB upserted: {res.upserted_count}, modified: {res.modified_count}")
+        else:
+            d = weather_data
+            key = {"city": d.get("city"), "type": d.get("type", "current")}
+            if d.get("type") == "forecast":
+                key["forecast_time"] = d.get("forecast_time")
+            weather_col.update_one(key, {"$set": d}, upsert=True)
+            print("💾 Đã lưu MongoDB 1 bản ghi")
+    except Exception as e:
+        print(f"❌ Lỗi MongoDB: {e}")
+
+# ====== MongoDB delete helpers ======
+
+def delete_all_weather_mongodb():
+    try:
+        res = weather_col.delete_many({})
+        print(f"🗑️ MongoDB: xóa toàn bộ, deleted={res.deleted_count}")
+    except Exception as e:
+        print(f"❌ Lỗi xóa MongoDB (all): {e}")
+
+
 def delete_all_weather_data():
     try:
         es.indices.delete(index="weather", ignore=[400, 404])
@@ -198,7 +242,7 @@ if __name__ == "__main__":
     
     # Xóa dữ liệu cũ trước khi crawl mới
     delete_all_weather_data()
-    
+    delete_all_weather_mongodb()
     all_data = []
     
     # Crawl nhiều thành phố (hiện tại & dự báo)
@@ -208,6 +252,7 @@ if __name__ == "__main__":
     # Lưu dữ liệu
     if all_data:
         save_to_elasticsearch(all_data)
+        save_to_mongodb(all_data)
         print(f"\n🎯 HOÀN THÀNH! Crawl được {len(all_data)} bản ghi thời tiết")
         # Thống kê
         current_count = sum(1 for item in all_data if item.get('type') == 'current')
