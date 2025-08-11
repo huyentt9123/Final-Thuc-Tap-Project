@@ -22,6 +22,8 @@
     .forecast-grid th, .forecast-grid td { border-bottom: 1px solid #f0f0f0; padding: 6px 8px; text-align: left; font-size: 14px; }
     .nav-btn { cursor: pointer; padding: 6px 10px; border: 1px solid #ddd; background: #fff; border-radius: 6px; }
     .nav-btn:disabled { opacity: .5; cursor: not-allowed; }
+    .outfit { margin-top: 12px; padding: 12px; background: #fffaf5; border: 1px solid #f0e2cf; border-radius: 8px; }
+    .tag { display: inline-block; background: #f1f5f9; border-radius: 999px; padding: 2px 8px; margin: 2px 4px 0 0; font-size: 12px; }
   </style>
 </head>
 <body>
@@ -82,6 +84,7 @@
     </form>
 
     <div id="weatherBox" class="weather" style="display:none"></div>
+    <div id="outfitBox" class="outfit" style="display:none"></div>
     <div id="forecastBox" class="forecast" style="display:none"></div>
     <div class="result" id="result"></div>
   </div>
@@ -134,6 +137,7 @@
     const placeInput = document.getElementById('place');
     const destinationSelect = document.getElementById('destination');
     const weatherBox = document.getElementById('weatherBox');
+    const outfitBox = document.getElementById('outfitBox');
     const forecastBox = document.getElementById('forecastBox');
 
     function updateDestinations(place) {
@@ -182,7 +186,7 @@
       });
     }
 
-    // Submit form → gọi API backend (weather by city + flights)
+    // Submit form → gọi API backend (weather current + outfit + forecast + flights)
     const form = document.getElementById('flightForm');
     const resultDiv = document.getElementById('result');
 
@@ -200,15 +204,18 @@
         return;
       }
 
-      // 1) Weather current + forecast
+      // Weather + Outfit + Forecast
       try {
         weatherBox.style.display = 'none';
         weatherBox.innerHTML = '';
+        outfitBox.style.display = 'none';
+        outfitBox.innerHTML = '';
         forecastBox.style.display = 'none';
         forecastBox.innerHTML = '';
 
-        const [wr, fr] = await Promise.all([
+        const [wr, orq, fr] = await Promise.all([
           fetch(`/weather/by-city?city=${encodeURIComponent(city)}`),
+          fetch(`/weather/outfit-by-date?city=${encodeURIComponent(city)}&date=${departure_date}`),
           fetch(`/weather/forecast-by-city?city=${encodeURIComponent(city)}`)
         ]);
 
@@ -221,6 +228,28 @@
               <div>Mô tả: ${w.description || '-'} | Độ ẩm: ${w.humidity ?? '-'}% | Gió: ${w.wind_speed ?? '-'} m/s</div>
             `;
             weatherBox.style.display = 'block';
+          }
+        }
+
+        if (orq.ok) {
+          const outfitData = await orq.json();
+          if (outfitData && outfitData.outfit && !outfitData.message) {
+            const o = outfitData.outfit;
+            outfitBox.innerHTML = `
+              <div><strong>Gợi ý trang phục cho ngày ${departure_date}</strong></div>
+              <div>${(o.outfit || []).map(x => `<span class='tag'>${x}</span>`).join(' ')}</div>
+              ${o.outerwear ? `<div class='small'>Áo khoác: ${o.outerwear}</div>` : ''}
+              <div class='small'>Giày: ${o.footwear || '-'}</div>
+              ${o.accessories?.length ? `<div class='small'>Phụ kiện: ${(o.accessories || []).join(', ')}</div>` : ''}
+              ${o.colors?.length ? `<div class='small'>Màu sắc: ${(o.colors || []).join(', ')}</div>` : ''}
+              ${o.comfort_level ? `<div class='small'>Độ thoải mái: ${o.comfort_level}</div>` : ''}
+              ${o.notes ? `<div class='small'>Lưu ý: ${o.notes}</div>` : ''}
+              <div class='small'>Thời gian: ${outfitData.sample_time || ''} - ${outfitData.weather_note || ''}</div>
+            `;
+            outfitBox.style.display = 'block';
+          } else {
+            outfitBox.innerHTML = `<div>Không có dữ liệu trang phục cho ngày ${departure_date}</div>`;
+            outfitBox.style.display = 'block';
           }
         }
 
@@ -249,7 +278,7 @@
         }
       } catch {}
 
-      // 2) Flights
+      // Flights
       const url = `/flights/search-flights?origin=${encodeURIComponent(origin)}&destination=${encodeURIComponent(destination)}&departure_date=${encodeURIComponent(departure_date)}&adults=${encodeURIComponent(adults)}`;
       resultDiv.innerHTML = 'Đang tìm kiếm...';
       try {

@@ -43,14 +43,15 @@ def get_latest_weather_by_city(city: str) -> Optional[dict]:
 #     return get_latest_weather_by_city(city)
 
 def get_forecast_by_city(city: str, days: int = 6) -> dict:
-    # Lấy dự báo từ bây giờ trở đi, type=forecast, sort theo thời gian
-    now_iso = datetime.utcnow().isoformat()
+    # Lấy tất cả dự báo, type=forecast, sort theo thời gian
+    from datetime import datetime
+    today = datetime.now().strftime('%Y-%m-%d')
+    
     query = {
         "bool": {
             "must": [
                 {"match": {"city": city}},
-                {"term": {"type": "forecast"}},
-                {"range": {"forecast_time": {"gte": now_iso}}}
+                {"term": {"type": "forecast"}}
             ]
         }
     }
@@ -58,10 +59,14 @@ def get_forecast_by_city(city: str, days: int = 6) -> dict:
     size = max(40, days * 8)
     res = es.search(index=INDEX, query=query, size=size, sort=[{"forecast_time": {"order": "asc"}}])
     hits = res.get("hits", {}).get("hits", [])
+    
     grouped: Dict[str, List[dict]] = {}
     for h in hits:
         src = h.get("_source", {})
         date_key = src.get("forecast_date") or (src.get("forecast_time", "")[0:10])
+        # Bỏ qua ngày hôm nay, chỉ lấy từ ngày mai trở đi
+        if date_key <= today:
+            continue
         item = {
             "time": src.get("forecast_time"),
             "hour": src.get("forecast_hour"),
@@ -72,6 +77,7 @@ def get_forecast_by_city(city: str, days: int = 6) -> dict:
             "wind_speed": src.get("wind_speed"),
         }
         grouped.setdefault(date_key, []).append(item)
+    
     days_list = []
     for date_key in sorted(grouped.keys())[:days]:
         days_list.append({"date": date_key, "items": grouped[date_key]})
