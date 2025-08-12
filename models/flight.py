@@ -12,7 +12,7 @@ class FlightSegment(BaseModel):
 
 class FlightOffer(BaseModel):
     id: str
-    price: float
+    price: int  # Giá vé bằng VND (số nguyên)
     currency: str
     segments: List[FlightSegment]
     seats_left: Optional[int]

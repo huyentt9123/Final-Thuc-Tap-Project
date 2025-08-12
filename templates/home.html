@@ -300,12 +300,44 @@
     });
 
     function renderFlight(item) {
-      const seg = (item.segments && item.segments[0]) || {};
-      const price = `${item.price} ${item.currency}`;
-      return `
-        <div class="card">
+      // Format giá VND với dấu phẩy phân cách hàng nghìn
+      const price = `${item.price.toLocaleString('vi-VN')} ${item.currency}`;
+      
+      // Hiển thị tất cả các tuyến bay
+      const segments = item.segments || [];
+      let segmentsHtml = '';
+      
+      if (segments.length === 0) {
+        segmentsHtml = '<div class="small">Không có thông tin tuyến bay</div>';
+      } else if (segments.length === 1) {
+        // Chuyến bay trực tiếp
+        const seg = segments[0];
+        segmentsHtml = `
           <div><strong>${seg.departure_iata}</strong> → <strong>${seg.arrival_iata}</strong> | ${seg.carrier_code} ${seg.flight_number}</div>
           <div class="small">${seg.departure_time} → ${seg.arrival_time} | Thời lượng: ${seg.duration}</div>
+        `;
+      } else {
+        // Chuyến bay có chuyển máy bay
+        const firstSeg = segments[0];
+        const lastSeg = segments[segments.length - 1];
+        segmentsHtml = `
+          <div><strong>${firstSeg.departure_iata}</strong> → <strong>${lastSeg.arrival_iata}</strong> (${segments.length} tuyến - có chuyển máy bay)</div>
+        `;
+        
+        // Hiển thị chi tiết từng tuyến
+        segments.forEach((seg, index) => {
+          segmentsHtml += `
+            <div class="small">
+              Tuyến ${index + 1}: <strong>${seg.departure_iata}</strong> → <strong>${seg.arrival_iata}</strong> | ${seg.carrier_code} ${seg.flight_number}
+              <br>&nbsp;&nbsp;&nbsp;&nbsp;${seg.departure_time} → ${seg.arrival_time} | Thời lượng: ${seg.duration}
+            </div>
+          `;
+        });
+      }
+      
+      return `
+        <div class="card">
+          ${segmentsHtml}
           <div>Giá: <strong>${price}</strong> | Ghế còn: ${item.seats_left ?? '-'}</div>
         </div>
       `;

@@ -28,6 +28,19 @@ def ensure_index():
 ensure_index()
 from models.flight import FlightOffer, FlightSegment
 
+# Tỷ giá USD sang VND (có thể cập nhật từ API tỷ giá thực tế)
+USD_TO_VND_RATE = 24000
+
+def convert_price_to_vnd(price: float, currency: str) -> int:
+    """Chuyển đổi giá từ tiền tệ gốc sang VND (số nguyên)"""
+    if currency == "VND":
+        return int(price)
+    elif currency == "USD":
+        return int(price * USD_TO_VND_RATE)
+    else:
+        # Mặc định coi như USD nếu không biết loại tiền tệ
+        return int(price * USD_TO_VND_RATE)
+
 def map_amadeus_to_model(offer: dict, origin: str, destination: str, departure_date: str, adults: int) -> FlightOffer:
     segments = []
     for itinerary in offer.get("itineraries", []):
@@ -41,10 +54,15 @@ def map_amadeus_to_model(offer: dict, origin: str, destination: str, departure_d
                 flight_number=seg["number"],
                 duration=seg["duration"]
             ))
+    # Chuyển đổi giá sang VND
+    original_price = float(offer["price"]["total"])
+    original_currency = offer["price"]["currency"]
+    price_vnd = convert_price_to_vnd(original_price, original_currency)
+    
     return FlightOffer(
         id=offer["id"],
-        price=float(offer["price"]["total"]),
-        currency=offer["price"]["currency"],
+        price=price_vnd,  # Giá đã chuyển sang VND
+        currency="VND",   # Luôn lưu bằng VND
         segments=segments,
         seats_left=offer.get("numberOfBookableSeats"),
         origin=origin,
