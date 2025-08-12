@@ -31,6 +31,12 @@ input, select, button {
   gap: 16px; 
 }
 
+.row-4 { 
+  display: grid; 
+  grid-template-columns: 1fr 1fr 1fr 1fr; 
+  gap: 16px; 
+}
+
 .hint { 
   color: #666; 
   font-size: 12px; 
@@ -115,4 +121,33 @@ input, select, button {
   padding: 2px 8px; 
   margin: 2px 4px 0 0; 
   font-size: 12px; 
+}
+
+.search-summary {
+  margin-bottom: 16px;
+  padding: 16px;
+  background: #f8fffe;
+  border: 1px solid #d1fae5;
+  border-radius: 8px;
+}
+
+.search-summary h3 {
+  margin: 0 0 8px 0;
+  color: #047857;
+  font-size: 18px;
+}
+
+.search-summary div {
+  margin: 4px 0;
+  font-size: 14px;
+  color: #374151;
+}
+.hotel-card {
+  border: 1px solid #ccc;
+  margin: 10px 0;
+  padding: 10px;
+  border-radius: 6px;
+}
+.hotel-card h4 {
+  margin: 0 0 5px;
 }

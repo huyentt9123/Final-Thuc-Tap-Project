@@ -1,11 +1,13 @@
 <!DOCTYPE html>
 <html lang="vi">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Tìm chuyến bay</title>
   <link rel="stylesheet" href="/static/style.css">
 </head>
+
 <body>
   <div class="container">
     <h2>Lên kế hoạch</h2>
@@ -37,25 +39,37 @@
         </div>
         <div>
           <label for="adults">Số lượng người lớn</label>
-          <select id="adults" name="adults">
-            <option value="1" selected>1</option>
-            <option value="2">2</option>
-            <option value="3">3</option>
-            <option value="4">4</option>
-          </select>
+          <input type="number" id="adults" name="adults" min="1" step="1" value="1" />
         </div>
       </div>
 
-      <div class="row-3">
+      <div class="row-4">
         <div>
           <label for="hotelType">Loại khách sạn</label>
-          <select id="hotelType" disabled>
-            <option value="">None</option>
+          <select id="hotelType" name="hotelType">
+            <option value="">-- Chọn loại khách sạn --</option>
+            <option value="1_star">Khách sạn 1 sao</option>
+            <option value="2_star">Khách sạn 2 sao</option>
+            <option value="3_star">Khách sạn 3 sao</option>
+            <option value="4_star">Khách sạn 4 sao</option>
+            <option value="5_star">Khách sạn 5 sao</option>
           </select>
         </div>
         <div>
-          <label for="budget">Ngân sách (máy bay + khách sạn)</label>
-          <input type="text" id="budget" placeholder="None" disabled />
+          <label for="rooms">Số phòng</label>
+          <input type="number" id="rooms" name="rooms" min="1" step="1" value="1" />
+        </div>
+        <div>
+          <label for="budget">Ngân sách (VND)</label>
+          <select id="budget" name="budget">
+            <option value="">-- Chọn ngân sách --</option>
+            <option value="under_2m">Dưới 2 triệu</option>
+            <option value="2m_5m">2 - 5 triệu</option>
+            <option value="5m_10m">5 - 10 triệu</option>
+            <option value="10m_20m">10 - 20 triệu</option>
+            <option value="20m_50m">20 - 50 triệu</option>
+            <option value="over_50m">Trên 50 triệu</option>
+          </select>
         </div>
         <div style="display:flex; align-items:flex-end;">
           <button type="submit">Tìm chuyến bay</button>
@@ -90,7 +104,7 @@
       "Hà Nội": [
         { code: "HAN", name: "Nội Bài - Hà Nội" },
       ],
-      "TP.HCM": [
+      "Sài Gòn": [
         { code: "SGN", name: "Tân Sơn Nhất - TP.HCM" },
       ],
       "Đà Nẵng": [
@@ -102,7 +116,7 @@
       "Hạ Long": "Ha Long",
       "Nha Trang": "Nha Trang",
       "Hà Nội": "Hanoi",
-      "TP.HCM": "Ho Chi Minh City",
+      "Sài Gòn": "Ho Chi Minh City",
       "Đà Nẵng": "Da Nang",
     };
 
@@ -137,7 +151,7 @@
     function renderForecastDay(day) {
       const rows = day.items.map(it => `
         <tr>
-          <td>${it.hour || new Date(it.time).toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'})}</td>
+          <td>${it.hour || new Date(it.time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</td>
           <td>${it.description || '-'}</td>
           <td>${it.temperature_c ?? '-'}°C</td>
           <td>${it.feels_like_c ?? '-'}°C</td>
@@ -175,9 +189,12 @@
       const origin = originSelect.value;
       const destination = destinationSelect.value;
       const departure_date = document.getElementById('date').value;
-      const adults = document.getElementById('adults').value;
+      let adultsVal = document.getElementById('adults').value;
+      const adults = Math.max(1, parseInt(adultsVal, 10) || 1);
       const place = (document.getElementById('place').value || '').trim();
       const city = placeToCity[place] || place;
+      const hotelType = document.getElementById('hotelType').value || '';
+      const budget = document.getElementById('budget').value || '';
 
       if (!origin || !destination || !departure_date) {
         alert('Vui lòng điền đầy đủ các trường bắt buộc');
@@ -256,10 +273,18 @@
             document.getElementById('nextDay').onclick = (e) => e.preventDefault();
           }
         }
-      } catch {}
+      } catch { }
 
       // Flights
-      const url = `/flights/search-flights?origin=${encodeURIComponent(origin)}&destination=${encodeURIComponent(destination)}&departure_date=${encodeURIComponent(departure_date)}&adults=${encodeURIComponent(adults)}`;
+      let url = `/flights/search-flights?origin=${encodeURIComponent(origin)}&destination=${encodeURIComponent(destination)}&departure_date=${encodeURIComponent(departure_date)}&adults=${encodeURIComponent(adults)}`;
+
+      // Thêm thông tin khách sạn và ngân sách nếu có
+      if (hotelType) {
+        url += `&hotel_type=${encodeURIComponent(hotelType)}`;
+      }
+      if (budget) {
+        url += `&budget=${encodeURIComponent(budget)}`;
+      }
       resultDiv.innerHTML = 'Đang tìm kiếm...';
       try {
         const res = await fetch(url, { headers: { 'accept': 'application/json' } });
@@ -272,21 +297,21 @@
           resultDiv.innerHTML = 'Không tìm thấy chuyến bay phù hợp';
           return;
         }
-        resultDiv.innerHTML = data.map(item => renderFlight(item)).join('');
+        resultDiv.innerHTML = data.map((item, idx) => renderFlight(item, idx)).join('');
       } catch (err) {
         console.error(err);
         resultDiv.innerHTML = 'Có lỗi xảy ra khi tìm kiếm';
       }
     });
 
-    function renderFlight(item) {
+    function renderFlight(item, index) {
       // Format giá VND với dấu phẩy phân cách hàng nghìn
       const price = `${item.price.toLocaleString('vi-VN')} ${item.currency}`;
-      
+
       // Hiển thị tất cả các tuyến bay
       const segments = item.segments || [];
       let segmentsHtml = '';
-      
+
       if (segments.length === 0) {
         segmentsHtml = '<div class="small">Không có thông tin tuyến bay</div>';
       } else if (segments.length === 1) {
@@ -303,7 +328,7 @@
         segmentsHtml = `
           <div><strong>${firstSeg.departure_iata}</strong> → <strong>${lastSeg.arrival_iata}</strong> (${segments.length} tuyến - có chuyển máy bay)</div>
         `;
-        
+
         // Hiển thị chi tiết từng tuyến
         segments.forEach((seg, index) => {
           segmentsHtml += `
@@ -314,14 +339,134 @@
           `;
         });
       }
-      
+
       return `
-        <div class="card">
+        <div class="card" data-flight-index="${index}">
           ${segmentsHtml}
           <div>Giá: <strong>${price}</strong> | Ghế còn: ${item.seats_left ?? '-'}</div>
+          <div style="margin-top:8px;">
+            <button class="show-hotels" data-index="${index}" data-price="${item.price}">Xem khách sạn phù hợp</button>
+          </div>
+          <div id="hotels-for-${index}" style="margin-top:10px;"></div>
         </div>
       `;
     }
+
+    // Chuyển giá trị ngân sách dropdown thành khoảng tiền [min, max]
+    function getBudgetRange(budgetVal) {
+      switch (budgetVal) {
+        case 'under_2m': return [0, 2_000_000];
+        case '2m_5m': return [2_000_000, 5_000_000];
+        case '5m_10m': return [5_000_000, 10_000_000];
+        case '10m_20m': return [10_000_000, 20_000_000];
+        case '20m_50m': return [20_000_000, 50_000_000];
+        case 'over_50m': return [50_000_000, Number.POSITIVE_INFINITY];
+        default: return [0, Number.POSITIVE_INFINITY];
+      }
+    }
+
+    // Parse giá khách sạn từ price_point (có thể là số hoặc chuỗi)
+    function parseHotelPrice(pricePoint) {
+      if (pricePoint == null) return NaN;
+      if (typeof pricePoint === 'number') return pricePoint;
+      if (typeof pricePoint === 'string') {
+        const digits = pricePoint.replace(/[^0-9]/g, '');
+        if (!digits) return NaN;
+        try { return parseInt(digits, 10); } catch { return NaN; }
+      }
+      return NaN;
+    }
+
+    // Lắng nghe click để hiển thị khách sạn theo từng chuyến bay và ngân sách còn lại
+    resultDiv.addEventListener('click', async (e) => {
+      const btn = e.target.closest('.show-hotels');
+      if (!btn) return;
+
+      // Lấy dữ liệu cần thiết
+      const idx = btn.getAttribute('data-index');
+      const flightPrice = parseInt(btn.getAttribute('data-price'), 10) || 0;
+      const hotelsContainer = document.getElementById(`hotels-for-${idx}`);
+      const hotelTypeVal = document.getElementById('hotelType').value || '';
+      const budgetVal = document.getElementById('budget').value || '';
+      const rooms = Math.max(1, parseInt((document.getElementById('rooms').value || '1'), 10));
+
+      if (!budgetVal) {
+        hotelsContainer.innerHTML = '<div class="small">Vui lòng chọn ngân sách trước.</div>';
+        return;
+      }
+
+      const [budgetMin, budgetMax] = getBudgetRange(budgetVal);
+      // Lấy city tiếng Việt từ input địa điểm
+      const placeVal = (placeInput.value || '').trim();
+      const cityForApi = placeVal || 'Hà Nội';
+
+      // Ngân sách tổng cho cả chuyến đi (không nhân theo số người)
+      const remainingBudget = (budgetMax || 0) - flightPrice;
+      if (remainingBudget <= 0) {
+        hotelsContainer.innerHTML = '<div class="small">Ngân sách không đủ sau khi trừ tiền vé máy bay.</div>';
+        return;
+      }
+
+      // Giới hạn tối đa cho mỗi phòng để backend lọc sơ bộ
+      const perRoomMax = Math.floor(remainingBudget / rooms);
+
+      // Xác định endpoint theo việc có chọn loại khách sạn hay không
+      let hotelApiUrl;
+      let selectedStars = NaN;
+      if (hotelTypeVal) {
+        selectedStars = parseInt(String(hotelTypeVal).replace(/\D/g, ''), 10);
+      }
+      const priceParams = `&max_price=${encodeURIComponent(perRoomMax)}`;
+      if (!Number.isNaN(selectedStars)) {
+        hotelApiUrl = `/hotel/top-hotel-star?city=${encodeURIComponent(cityForApi)}&stars=${encodeURIComponent(selectedStars)}${priceParams}`;
+      } else {
+        hotelApiUrl = `/hotel/top-hotel-rating?city=${encodeURIComponent(cityForApi)}${priceParams}`;
+      }
+
+      hotelsContainer.innerHTML = 'Đang tải dữ liệu khách sạn...';
+
+      try {
+        const hotelResp = await fetch(hotelApiUrl);
+        if (!hotelResp.ok) throw new Error('Lỗi khi lấy dữ liệu khách sạn');
+        const hotels = await hotelResp.json();
+
+        // Lọc cuối cùng theo tổng chi phí khách sạn = giá mỗi phòng * số phòng <= remainingBudget
+        const filtered = hotels.filter(h => {
+          const hp = parseHotelPrice(h.price_point);
+          if (!Number.isFinite(hp)) return false;
+          return (hp * rooms) <= remainingBudget;
+        });
+
+        // Sắp xếp theo yêu cầu
+        if (!Number.isNaN(selectedStars)) {
+          filtered.sort((a, b) => (b.weighted_rating ?? b.rating ?? 0) - (a.weighted_rating ?? a.rating ?? 0));
+        } else {
+          filtered.sort((a, b) => (b.rating ?? b.weighted_rating ?? 0) - (a.rating ?? a.weighted_rating ?? 0));
+        }
+
+        if (!filtered.length) {
+          hotelsContainer.innerHTML = '<div class="small">Không có khách sạn nào phù hợp với ngân sách còn lại.</div>';
+          return;
+        }
+
+        // Render danh sách khách sạn
+        hotelsContainer.innerHTML = filtered.map(h => `
+          <div class="hotel-card">
+            <h4>${h.name}</h4>
+            <p>${h.address || ''}</p>
+            <p>Điểm đánh giá: ${h.rating}</p>
+            <p>Lượt đánh giá: ${h.review_count}</p>
+            <p>Loại sao: ${h.stars}</p>
+            <p>Giá: ${h.price_point ?? '-'}</p>
+            <p class="small">Tổng (ước tính) cho ${rooms} phòng: ${(() => { const p=parseHotelPrice(h.price_point); return Number.isFinite(p)? (p*rooms).toLocaleString('vi-VN')+' VND' : '-';})()}</p>
+          </div>
+        `).join('');
+      } catch (err) {
+        console.error(err);
+        hotelsContainer.innerHTML = '<div class="small">Lỗi khi tải dữ liệu khách sạn</div>';
+      }
+    });
   </script>
 </body>
+
 </html>
