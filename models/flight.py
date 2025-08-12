@@ -21,3 +21,4 @@ class FlightOffer(BaseModel):
     departure_date: str
     adults: int
     created_at: Optional[str] = None
+    

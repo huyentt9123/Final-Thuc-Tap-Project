@@ -1,0 +1,17 @@
+body { font-family: Arial, sans-serif; margin: 24px; }
+.container { max-width: 900px; margin: 0 auto; }
+label { display: block; margin: 12px 0 6px; font-weight: 600; }
+input, select, button { padding: 8px 10px; font-size: 14px; }
+.row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+.hint { color: #666; font-size: 12px; margin-top: 4px; }
+.result { margin-top: 24px; }
+.card { border: 1px solid #ddd; border-radius: 8px; padding: 12px; margin-bottom: 12px; }
+.small { font-size: 12px; color: #555; }
+.weather { margin-top: 12px; padding: 12px; background: #f7f9fc; border: 1px solid #e1e7f0; border-radius: 8px; }
+.forecast { margin-top: 12px; padding: 12px; border: 1px solid #eee; border-radius: 8px; }
+.forecast-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+.forecast-grid { width: 100%; border-collapse: collapse; }
+.forecast-grid th, .forecast-grid td { border-bottom: 1px solid #f0f0f0; padding: 6px 8px; text-align: left; font-size: 14px; }
+.nav-btn { cursor: pointer; padding: 6px 10px; border: 1px solid #ddd; background: #fff; border-radius: 6px; }
+.nav-btn:disabled { opacity: .5; cursor: not-allowed; }
