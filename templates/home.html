@@ -81,6 +81,7 @@
     <div id="outfitBox" class="outfit" style="display:none"></div>
     <div id="forecastBox" class="forecast" style="display:none"></div>
     <div class="result" id="result"></div>
+    <div id="sightseeingBox" class="sightseeing" style="display:none"></div>
   </div>
 
   <script>
@@ -133,6 +134,7 @@
     const weatherBox = document.getElementById('weatherBox');
     const outfitBox = document.getElementById('outfitBox');
     const forecastBox = document.getElementById('forecastBox');
+    const sightseeingBox = document.getElementById('sightseeingBox');
 
     function updateDestinations(place) {
       destinationSelect.innerHTML = '<option value="">-- Chọn sân bay --</option>';
@@ -209,6 +211,8 @@
         outfitBox.innerHTML = '';
         forecastBox.style.display = 'none';
         forecastBox.innerHTML = '';
+        sightseeingBox.style.display = 'none';
+        sightseeingBox.innerHTML = '';
 
         const [wr, orq, fr] = await Promise.all([
           fetch(`/weather/by-city?city=${encodeURIComponent(city)}`),
@@ -273,6 +277,30 @@
             document.getElementById('nextDay').onclick = (e) => e.preventDefault();
           }
         }
+        // Sightseeing (địa điểm du lịch, không chi phí)
+        try {
+          const sr = await fetch(`/sightseeing/no-cost-sightseeing?city=${encodeURIComponent(place)}`);
+          if (sr.ok) {
+            const ss = await sr.json();
+            if (Array.isArray(ss) && ss.length) {
+              const cards = ss.map(s => `
+                <div class='s-card'>
+                  <div class='s-title'>${s.name || '-'}</div>
+                  <div class='small'>Địa chỉ: ${s.address || '-'}</div>
+                  ${s.open_close ? `<div class='small'>Giờ mở cửa: ${s.open_close}</div>` : ''}
+                  ${s.type ? `<div class='small'>Loại: ${s.type}</div>` : ''}
+                  ${s.price ? `<div class='small'>Giá tham khảo: ${s.price}</div>` : ''}
+                  ${s.describe ? `<div class='small s-desc'>${s.describe}</div>` : ''}
+                </div>
+              `).join('');
+              sightseeingBox.innerHTML = `
+                <div class='section-header'><strong>Địa điểm du lịch gợi ý</strong> - ${place}</div>
+                <div class='sightseeing-grid'>${cards}</div>
+              `;
+              sightseeingBox.style.display = 'block';
+            }
+          }
+        } catch {}
       } catch { }
 
       // Flights
@@ -390,15 +418,55 @@
       const budgetVal = document.getElementById('budget').value || '';
       const rooms = Math.max(1, parseInt((document.getElementById('rooms').value || '1'), 10));
 
+      // Lấy city tiếng Việt từ input địa điểm
+      const placeVal = (placeInput.value || '').trim();
+      const cityForApi = placeVal || 'Hà Nội';
+
+      // Trường hợp KHÔNG nhập ngân sách: hiển thị theo đánh giá
       if (!budgetVal) {
-        hotelsContainer.innerHTML = '<div class="small">Vui lòng chọn ngân sách trước.</div>';
+        let selectedStars = NaN;
+        if (hotelTypeVal) {
+          selectedStars = parseInt(String(hotelTypeVal).replace(/\D/g, ''), 10);
+        }
+        let hotelApiUrl;
+        if (!Number.isNaN(selectedStars)) {
+          hotelApiUrl = `/hotel/top-hotel-star?city=${encodeURIComponent(cityForApi)}&stars=${encodeURIComponent(selectedStars)}`;
+        } else {
+          hotelApiUrl = `/hotel/top-hotel-rating?city=${encodeURIComponent(cityForApi)}`;
+        }
+        hotelsContainer.innerHTML = 'Đang tải dữ liệu khách sạn...';
+        try {
+          const hotelResp = await fetch(hotelApiUrl);
+          if (!hotelResp.ok) throw new Error('Lỗi khi lấy dữ liệu khách sạn');
+          const hotels = await hotelResp.json();
+          if (!hotels.length) {
+            hotelsContainer.innerHTML = '<div class="small">Không có khách sạn nào phù hợp.</div>';
+            return;
+          }
+          // Sắp xếp hiển thị theo đánh giá (phòng trường hợp backend chưa sort)
+          if (!Number.isNaN(selectedStars)) {
+            hotels.sort((a, b) => (b.weighted_rating ?? b.rating ?? 0) - (a.weighted_rating ?? a.rating ?? 0));
+          } else {
+            hotels.sort((a, b) => (b.rating ?? b.weighted_rating ?? 0) - (a.rating ?? a.weighted_rating ?? 0));
+          }
+          hotelsContainer.innerHTML = hotels.map(h => `
+            <div class="hotel-card">
+              <h4>${h.name}</h4>
+              <p>${h.address || ''}</p>
+              <p>Điểm đánh giá: ${h.rating}</p>
+              <p>Lượt đánh giá: ${h.review_count}</p>
+              <p>Loại sao: ${h.stars}</p>
+              <p>Giá: ${h.price_point ?? '-'}</p>
+            </div>
+          `).join('');
+        } catch (err) {
+          console.error(err);
+          hotelsContainer.innerHTML = '<div class="small">Lỗi khi tải dữ liệu khách sạn</div>';
+        }
         return;
       }
 
       const [budgetMin, budgetMax] = getBudgetRange(budgetVal);
-      // Lấy city tiếng Việt từ input địa điểm
-      const placeVal = (placeInput.value || '').trim();
-      const cityForApi = placeVal || 'Hà Nội';
 
       // Ngân sách tổng cho cả chuyến đi (không nhân theo số người)
       const remainingBudget = (budgetMax || 0) - flightPrice;
@@ -449,18 +517,93 @@
           return;
         }
 
-        // Render danh sách khách sạn
-        hotelsContainer.innerHTML = filtered.map(h => `
-          <div class="hotel-card">
-            <h4>${h.name}</h4>
-            <p>${h.address || ''}</p>
-            <p>Điểm đánh giá: ${h.rating}</p>
-            <p>Lượt đánh giá: ${h.review_count}</p>
-            <p>Loại sao: ${h.stars}</p>
-            <p>Giá: ${h.price_point ?? '-'}</p>
-            <p class="small">Tổng (ước tính) cho ${rooms} phòng: ${(() => { const p=parseHotelPrice(h.price_point); return Number.isFinite(p)? (p*rooms).toLocaleString('vi-VN')+' VND' : '-';})()}</p>
-          </div>
-        `).join('');
+                 // Render danh sách khách sạn
+         hotelsContainer.innerHTML = filtered.map(h => `
+           <div class="hotel-card">
+             <h4>${h.name}</h4>
+             <p>${h.address || ''}</p>
+             <p>Điểm đánh giá: ${h.rating}</p>
+             <p>Lượt đánh giá: ${h.review_count}</p>
+             <p>Loại sao: ${h.stars}</p>
+             <p>Giá: ${h.price_point ?? '-'}</p>
+             <p class="small">Tổng (ước tính) cho ${rooms} phòng: ${(() => { const p=parseHotelPrice(h.price_point); return Number.isFinite(p)? (p*rooms).toLocaleString('vi-VN')+' VND' : '-';})()}</p>
+             <button class="show-sightseeing" data-flight-price="${flightPrice}" data-hotel-price="${(() => { const p=parseHotelPrice(h.price_point); return Number.isFinite(p)? p*rooms : '';})()}">Xem địa điểm giải trí phù hợp</button>
+           </div>
+         `).join('');
+
+         // Lắng nghe click để hiển thị địa điểm du lịch theo ngân sách còn lại
+         hotelsContainer.addEventListener('click', async (e) => {
+           const btn = e.target.closest('.show-sightseeing');
+           if (!btn) return;
+
+           const flightPrice = parseInt(btn.getAttribute('data-flight-price'), 10) || 0;
+           const hotelTotal = parseInt(btn.getAttribute('data-hotel-price'), 10) || 0;
+
+           const budgetVal = document.getElementById('budget').value || '';
+           if (!budgetVal) {
+             sightseeingBox.innerHTML = '<div class="small">Vui lòng chọn ngân sách trước.</div>';
+             sightseeingBox.style.display = 'block';
+             return;
+           }
+           const [ , budgetMax ] = getBudgetRange(budgetVal);
+
+           // City tiếng Việt
+           const placeVal = (placeInput.value || '').trim();
+           const cityForApi = placeVal || 'Hà Nội';
+
+           // Ngân sách còn lại sau vé và khách sạn
+           const remaining = (budgetMax || 0) - flightPrice - hotelTotal;
+           if (remaining <= 0) {
+             sightseeingBox.innerHTML = '<div class="small">Ngân sách không đủ sau khi trừ tiền vé máy bay và khách sạn.</div>';
+             sightseeingBox.style.display = 'block';
+             return;
+           }
+
+           // Tải danh sách địa điểm du lịch và lọc theo approximate_price <= remaining
+           sightseeingBox.innerHTML = 'Đang tải địa điểm du lịch...';
+           sightseeingBox.style.display = 'block';
+
+           try {
+             const sr = await fetch(`/sightseeing/no-cost-sightseeing?city=${encodeURIComponent(cityForApi)}`);
+             if (!sr.ok) throw new Error('Sightseeing fetch error');
+             const ss = await sr.json();
+             const filtered = (Array.isArray(ss) ? ss : []).filter(s => {
+               if (typeof s.approximate_price === 'number') {
+                 return s.approximate_price <= remaining;
+               }
+               // Nếu không có giá ước lượng, vẫn hiển thị như gợi ý miễn phí/không rõ giá
+               return true;
+             });
+
+             if (!filtered.length) {
+               sightseeingBox.innerHTML = '<div class="small">Không có địa điểm giải trí phù hợp với ngân sách còn lại.</div>';
+               return;
+             }
+
+             const cards = filtered.map(s => `
+               <div class='s-card'>
+                 <div class='s-title'>${s.name || '-'}</div>
+                 <div class='small'>Địa chỉ: ${s.address || '-'}</div>
+                 ${s.open_close ? `<div class='small'>Giờ mở cửa: ${s.open_close}</div>` : ''}
+                 ${s.type ? `<div class='small'>Loại: ${s.type}</div>` : ''}
+                 ${s.price ? `<div class='small'>Giá tham khảo: ${s.price}</div>` : ''}
+                 ${s.describe ? `<div class='small s-desc'>${s.describe}</div>` : ''}
+               </div>
+             `).join('');
+
+             sightseeingBox.innerHTML = `
+               <div class='section-header'>
+                 <strong>Địa điểm du lịch gợi ý</strong> - ${cityForApi}
+                 <div class='small'>Chi phí hiện tại: ${flightPrice.toLocaleString('vi-VN')} VND (vé máy bay) + ${hotelTotal.toLocaleString('vi-VN')} VND (khách sạn)</div>
+                 <div class='small'>Ngân sách còn lại: ${remaining.toLocaleString('vi-VN')} VND</div>
+               </div>
+               <div class='sightseeing-grid'>${cards}</div>
+             `;
+           } catch (err) {
+             console.error(err);
+             sightseeingBox.innerHTML = '<div class="small">Lỗi khi tải địa điểm du lịch</div>';
+           }
+         });
       } catch (err) {
         console.error(err);
         hotelsContainer.innerHTML = '<div class="small">Lỗi khi tải dữ liệu khách sạn</div>';

@@ -14,7 +14,7 @@ app.mount("/static", StaticFiles(directory="static"), name="static")
 
 app.include_router(flight_router, prefix="/flights")
 app.include_router(weather_router, prefix="/weather")
-app.include_router(sightseeing_area_router, prefix="/sightseeing-areas")
+app.include_router(sightseeing_area_router, prefix="/sightseeing")
 app.include_router(hotel_router, prefix="/hotel")
 
 @app.get("/", response_class=HTMLResponse)
