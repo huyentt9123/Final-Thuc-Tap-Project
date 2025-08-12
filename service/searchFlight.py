@@ -15,6 +15,10 @@ def search_flight_with_cache(origin, destination, departure_date, adults=1):
         # Kiểm tra độ mới của một bản ghi
         if is_flight_data_fresh(cached_offers[0]):
             print("[Flights] Source: elasticsearch (cache hit)")
+            # Đảm bảo giá luôn là số nguyên (để tránh lỗi với dữ liệu cũ)
+            for offer in cached_offers:
+                if isinstance(offer.get('price'), float):
+                    offer['price'] = int(round(offer['price']))
             return cached_offers
 
     # 2) Không có hoặc đã cũ -> Gọi Amadeus

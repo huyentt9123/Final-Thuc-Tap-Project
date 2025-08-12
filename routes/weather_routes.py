@@ -7,14 +7,10 @@ import re
 router = APIRouter()
 
 @router.get("/by-city")
-def weather_by_city(city: str = Query(..., description="Tên thành phố, ví dụ: Hanoi")):
+def get_weather_by_city(city: str = Query(..., description="Tên thành phố, ví dụ: Hanoi")):
+    """Lấy thời tiết hiện tại của thành phố"""
     data = get_latest_weather_by_city(city)
     return data or {"message": "Không có dữ liệu thời tiết"}
-
-@router.get("/forecast-by-city")
-def forecast_by_city(city: str = Query(..., description="Tên thành phố, ví dụ: Hanoi")):
-    data = get_forecast_by_city(city)
-    return data or {"message": "Không có dữ liệu dự báo"}
 
 @router.get("/outfit-by-city")
 def outfit_by_city(city: str = Query(..., description="Tên thành phố, ví dụ: Hanoi")):
@@ -61,3 +57,13 @@ def outfit_by_date(
         "sample_time": target_item.get("hour", ""),
         "weather_note": f"Trạng thái: {target_item.get('description', '')} - {target_item.get('temperature_c', 0)}°C"
     }
+# lấy ra 5 khách sạn tốt nhất dựa vào điểm đánh giá và lượt đnánh giá nếu người dùng không nhập chi phí
+@router.get("/rate-hotel")
+def rate_hotel(city: str = Query(..., description="Tên thành phố, ví dụ: Hanoi")):
+    data = get_latest_weather_by_city(city)
+    return data or {"message": "Không có dữ liệu thời tiết"}
+
+@router.get("/forecast-by-city")
+def forecast_by_city(city: str = Query(..., description="Tên thành phố, ví dụ: Hanoi")):
+    data = get_forecast_by_city(city)
+    return data or {"message": "Không có dữ liệu dự báo"}

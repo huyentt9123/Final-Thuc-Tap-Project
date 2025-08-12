@@ -34,12 +34,12 @@ USD_TO_VND_RATE = 24000
 def convert_price_to_vnd(price: float, currency: str) -> int:
     """Chuyển đổi giá từ tiền tệ gốc sang VND (số nguyên)"""
     if currency == "VND":
-        return int(price)
+        return int(round(price))
     elif currency == "USD":
-        return int(price * USD_TO_VND_RATE)
+        return int(round(price * USD_TO_VND_RATE))
     else:
         # Mặc định coi như USD nếu không biết loại tiền tệ
-        return int(price * USD_TO_VND_RATE)
+        return int(round(price * USD_TO_VND_RATE))
 
 def map_amadeus_to_model(offer: dict, origin: str, destination: str, departure_date: str, adults: int) -> FlightOffer:
     segments = []
