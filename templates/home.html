@@ -31,14 +31,14 @@
         <div class="form-group">
           <label for="place" class="form-label">Bạn muốn đến đâu <span class="required">*</span></label>
           <div class="input-icon">
-            <input
-              type="text"
-              id="place"
-              placeholder="VD: Hạ Long, Nha Trang, ..."
-              required
-              class="form-control"
-              autocomplete="off"
-            />
+            <select id="place" class="form-control" required>
+              <option value="" disabled selected>--Chọn địa điểm--</option>
+              <option value="Hà Nội">Hà Nội</option>
+              <option value="Hạ Long">Hạ Long</option>
+              <option value="Đà Nẵng">Đà Nẵng</option>
+              <option value="Sài Gòn">TP.Hồ Chí Minh</option>
+              <option value="Nha Trang">Nha Trang</option>
+            </select>
             <i class="fa-solid fa-location-dot icon"></i>
           </div>
           <small class="hint">Nhập địa điểm, hệ thống gợi ý sân bay gần đó.</small>
@@ -336,7 +336,12 @@
         }
         // Sightseeing (địa điểm du lịch, không chi phí)
         try {
-          const sr = await fetch(`/sightseeing/no-cost-sightseeing?city=${encodeURIComponent(place)}`);
+                const placeV = (placeInput.value || '').trim();
+                let cityForAp = placeV|| 'Hà Nội';
+                if (cityForAp.toLowerCase() === 'sài gòn' || cityForAp.toLowerCase() === 'saigon') {
+                      cityForAp = 'Hồ Chí Minh';
+                }
+          const sr = await fetch(`/sightseeing/no-cost-sightseeing?city=${encodeURIComponent(cityForAp)}`);
           if (sr.ok) {
             const ss = await sr.json();
             if (Array.isArray(ss) && ss.length) {
@@ -663,9 +668,13 @@
            // Tải danh sách địa điểm du lịch và lọc theo approximate_price <= remaining
            sightseeingBox.innerHTML = 'Đang tải địa điểm du lịch...';
            sightseeingBox.style.display = 'block';
-
            try {
-             const sr = await fetch(`/sightseeing/no-cost-sightseeing?city=${encodeURIComponent(cityForApi)}`);
+              const placeV = (placeInput.value || '').trim();
+              let cityForAp = placeV|| 'Hà Nội';
+              if (cityForAp.toLowerCase() === 'sài gòn' || cityForAp.toLowerCase() === 'saigon') {
+                    cityForAp = 'Hồ Chí Minh';
+              }
+             const sr = await fetch(`/sightseeing/no-cost-sightseeing?city=${encodeURIComponent(cityForAp)}`);
              if (!sr.ok) throw new Error('Sightseeing fetch error');
              const ss = await sr.json();
              const filtered = (Array.isArray(ss) ? ss : []).filter(s => {
@@ -696,7 +705,7 @@
 
              sightseeingBox.innerHTML = `
                <div class='section-header'>
-                 <strong>Địa điểm du lịch gợi ý</strong> - ${cityForApi}
+                 <strong>Địa điểm du lịch gợi ý</strong> - ${cityForAp}
                  <div class='small'>Chi phí hiện tại: ${flightPrice.toLocaleString('vi-VN')} VND (vé máy bay) + ${hotelTotal.toLocaleString('vi-VN')} VND (khách sạn)</div>
                  <div class='small'>Ngân sách còn lại: ${remaining.toLocaleString('vi-VN')} VND</div>
                </div>

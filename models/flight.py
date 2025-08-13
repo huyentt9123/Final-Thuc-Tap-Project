@@ -1,6 +1,7 @@
 from pydantic import BaseModel
 from typing import List, Optional
 
+# 1 chặng
 class FlightSegment(BaseModel):
     departure_iata: str
     arrival_iata: str
@@ -10,6 +11,7 @@ class FlightSegment(BaseModel):
     flight_number: str
     duration: str
 
+# 1 chuyến bay nhưng có nhiêu chặng
 class FlightOffer(BaseModel):
     id: str
     price: int  # Giá vé bằng VND (số nguyên)

@@ -4,6 +4,7 @@ CLIENT_ID = "VzTbiJc8VEohpc7KioLW1ppUH1hVaWmQ"
 CLIENT_SECRET = "ujD4Z1GaVScziz2x"
 
 def get_amadeus_token():
+    # API để lấy 
     url = "https://test.api.amadeus.com/v1/security/oauth2/token"
     payload = {
         "grant_type": "client_credentials",
