@@ -6,73 +6,115 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Tìm chuyến bay</title>
   <link rel="stylesheet" href="/static/style.css">
+  <link
+    rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+  />
 </head>
 
 <body>
   <div class="container">
     <h2>Lên kế hoạch</h2>
 
-    <form id="flightForm">
-      <label for="origin">Sân bay phù hợp với bạn (required)</label>
-      <select id="origin" name="origin" required>
-        <!-- Sân bay hiển thị label, khi chọn gửi value là code -->
-      </select>
-
-      <div class="row">
-        <div>
-          <label for="place">Bạn muốn đến đâu (required)</label>
-          <input type="text" id="place" placeholder="VD: Hạ Long, Nha Trang, ..." required />
-          <div class="hint">Nhập địa điểm, hệ thống gợi ý sân bay gần đó.</div>
-        </div>
-        <div>
-          <label for="destination">Sân bay đến (required)</label>
-          <select id="destination" name="destination" required>
-            <option value="">-- Chọn sân bay --</option>
-          </select>
+    <form id="flightForm" class="flight-form">
+      <div class="form-row">
+        <div class="form-group">
+          <label for="origin" class="form-label">Sân bay phù hợp với bạn <span class="required">*</span></label>
+          <div class="input-icon">
+            <select id="origin" name="origin" required class="form-control"></select>
+            <i class="fa-solid fa-plane-departure icon"></i>
+          </div>
         </div>
       </div>
 
-      <div class="row">
-        <div>
-          <label for="date">Thời gian bay (chọn 1 ngày)</label>
-          <input type="date" id="date" name="departure_date" required />
+      <div class="form-row double-row">
+        <div class="form-group">
+          <label for="place" class="form-label">Bạn muốn đến đâu <span class="required">*</span></label>
+          <div class="input-icon">
+            <input
+              type="text"
+              id="place"
+              placeholder="VD: Hạ Long, Nha Trang, ..."
+              required
+              class="form-control"
+              autocomplete="off"
+            />
+            <i class="fa-solid fa-location-dot icon"></i>
+          </div>
+          <small class="hint">Nhập địa điểm, hệ thống gợi ý sân bay gần đó.</small>
         </div>
-        <div>
-          <label for="adults">Số lượng người lớn</label>
-          <input type="number" id="adults" name="adults" min="1" step="1" value="1" />
+
+        <div class="form-group">
+          <label for="destination" class="form-label">Sân bay đến <span class="required">*</span></label>
+          <div class="input-icon">
+            <select id="destination" name="destination" required class="form-control">
+              <option value="">-- Chọn sân bay --</option>
+            </select>
+            <i class="fa-solid fa-plane-arrival icon"></i>
+          </div>
         </div>
       </div>
 
-      <div class="row-4">
-        <div>
-          <label for="hotelType">Loại khách sạn</label>
-          <select id="hotelType" name="hotelType">
-            <option value="">-- Chọn loại khách sạn --</option>
-            <option value="1_star">Khách sạn 1 sao</option>
-            <option value="2_star">Khách sạn 2 sao</option>
-            <option value="3_star">Khách sạn 3 sao</option>
-            <option value="4_star">Khách sạn 4 sao</option>
-            <option value="5_star">Khách sạn 5 sao</option>
-          </select>
+      <div class="form-row double-row">
+        <div class="form-group">
+          <label for="date" class="form-label">Thời gian bay (chọn 1 ngày) <span class="required">*</span></label>
+          <div class="input-icon">
+            <input type="date" id="date" name="departure_date" required class="form-control" />
+            <i class="fa-solid fa-calendar-days icon"></i>
+          </div>
         </div>
-        <div>
-          <label for="rooms">Số phòng</label>
-          <input type="number" id="rooms" name="rooms" min="1" step="1" value="1" />
+
+        <div class="form-group">
+          <label for="adults" class="form-label">Số lượng người lớn</label>
+          <div class="input-icon">
+            <input type="number" id="adults" name="adults" min="1" step="1" value="1" class="form-control" />
+            <i class="fa-solid fa-user icon"></i>
+          </div>
         </div>
-        <div>
-          <label for="budget">Ngân sách (VND)</label>
-          <select id="budget" name="budget">
-            <option value="">-- Chọn ngân sách --</option>
-            <option value="under_2m">Dưới 2 triệu</option>
-            <option value="2m_5m">2 - 5 triệu</option>
-            <option value="5m_10m">5 - 10 triệu</option>
-            <option value="10m_20m">10 - 20 triệu</option>
-            <option value="20m_50m">20 - 50 triệu</option>
-            <option value="over_50m">Trên 50 triệu</option>
-          </select>
+      </div>
+
+      <div class="form-row quadruple-row">
+        <div class="form-group">
+          <label for="hotelType" class="form-label">Loại khách sạn</label>
+          <div class="input-icon">
+            <select id="hotelType" name="hotelType" class="form-control">
+              <option value="">-- Chọn loại khách sạn --</option>
+              <option value="1_star">Khách sạn 1 sao</option>
+              <option value="2_star">Khách sạn 2 sao</option>
+              <option value="3_star">Khách sạn 3 sao</option>
+              <option value="4_star">Khách sạn 4 sao</option>
+              <option value="5_star">Khách sạn 5 sao</option>
+            </select>
+            <i class="fa-solid fa-hotel icon"></i>
+          </div>
         </div>
-        <div style="display:flex; align-items:flex-end;">
-          <button type="submit">Tìm chuyến bay</button>
+
+        <div class="form-group">
+          <label for="rooms" class="form-label">Số phòng</label>
+          <div class="input-icon">
+            <input type="number" id="rooms" name="rooms" min="1" step="1" value="1" class="form-control" />
+            <i class="fa-solid fa-bed icon"></i>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="budget" class="form-label">Ngân sách (VND)</label>
+          <div class="input-icon">
+            <select id="budget" name="budget" class="form-control">
+              <option value="">-- Chọn ngân sách --</option>
+              <option value="under_2m">Dưới 2 triệu</option>
+              <option value="2m_5m">2 - 5 triệu</option>
+              <option value="5m_10m">5 - 10 triệu</option>
+              <option value="10m_20m">10 - 20 triệu</option>
+              <option value="20m_50m">20 - 50 triệu</option>
+              <option value="over_50m">Trên 50 triệu</option>
+            </select>
+            <i class="fa-solid fa-wallet icon"></i>
+          </div>
+        </div>
+
+        <div class="form-group form-group-submit">
+          <button type="submit" class="btn-submit">Tìm chuyến bay</button>
         </div>
       </div>
     </form>
@@ -223,10 +265,25 @@
         if (wr.ok) {
           const w = await wr.json();
           if (w && !w.message) {
+            // Gán icon thời tiết dựa theo mô tả
+            let weatherIcon = '☁️'; // mặc định mây
+            const desc = (w.description || '').toLowerCase();
+            if (desc.includes('nắng') || desc.includes('clear')) weatherIcon = '☀️';
+            else if (desc.includes('mưa')) weatherIcon = '🌧️';
+            else if (desc.includes('bão') || desc.includes('dông')) weatherIcon = '⛈️';
+            else if (desc.includes('tuyết')) weatherIcon = '❄️';
+
             weatherBox.innerHTML = `
-              <div><strong>Thời tiết hiện tại</strong> - ${w.city || ''}</div>
-              <div>Nhiệt độ: ${w.temperature_c ?? '-'}°C, Cảm giác: ${w.feels_like_c ?? '-'}°C</div>
-              <div>Mô tả: ${w.description || '-'} | Độ ẩm: ${w.humidity ?? '-'}% | Gió: ${w.wind_speed ?? '-'} m/s</div>
+              <div><strong><span style="font-size:28px; margin-right:8px;">${weatherIcon}</span>Thời tiết hiện tại</strong> - ${w.city || ''}</div>
+              <div style="font-size:22px; margin-top:6px;">
+                Nhiệt độ: <span style="font-weight:700; color:#d9534f;">${w.temperature_c ?? '-'}°C</span>, 
+                Cảm giác: <span style="font-weight:700; color:#f0ad4e;">${w.feels_like_c ?? '-'}°C</span>
+              </div>
+              <div style="margin-top:8px; font-style:italic; color:#5a5a5a;">
+                <i class="fas fa-cloud" style="color:#6c757d; margin-right:6px;"></i> ${w.description || '-'} | 
+                <i class="fas fa-tint" style="color:#3498db; margin: 0 6px;"></i> Độ ẩm: ${w.humidity ?? '-'}% | 
+                <i class="fas fa-wind" style="color:#85c1e9; margin-left:6px;"></i> Gió: ${w.wind_speed ?? '-'} m/s
+              </div>
             `;
             weatherBox.style.display = 'block';
           }
@@ -237,15 +294,15 @@
           if (outfitData && outfitData.outfit && !outfitData.message) {
             const o = outfitData.outfit;
             outfitBox.innerHTML = `
-              <div><strong>Gợi ý trang phục cho ngày ${departure_date}</strong></div>
-              <div>${(o.outfit || []).map(x => `<span class='tag'>${x}</span>`).join(' ')}</div>
-              ${o.outerwear ? `<div class='small'>Áo khoác: ${o.outerwear}</div>` : ''}
-              <div class='small'>Giày: ${o.footwear || '-'}</div>
-              ${o.accessories?.length ? `<div class='small'>Phụ kiện: ${(o.accessories || []).join(', ')}</div>` : ''}
-              ${o.colors?.length ? `<div class='small'>Màu sắc: ${(o.colors || []).join(', ')}</div>` : ''}
-              ${o.comfort_level ? `<div class='small'>Độ thoải mái: ${o.comfort_level}</div>` : ''}
-              ${o.notes ? `<div class='small'>Lưu ý: ${o.notes}</div>` : ''}
-              <div class='small'>Thời gian: ${outfitData.sample_time || ''} - ${outfitData.weather_note || ''}</div>
+              <div><strong><i class="fas fa-tshirt" style="color:#5cb85c; margin-right:6px;"></i>Gợi ý trang phục cho ngày ${departure_date}</strong></div>
+              <div style="margin-top:6px;">${(o.outfit || []).map(x => `<span class='tag'>${x}</span>`).join(' ')}</div>
+              ${o.outerwear ? `<div class='small' style="margin-top:6px;"><i class="fas fa-jacket" style="color:#f0ad4e; margin-right:6px;"></i>Áo khoác: ${o.outerwear}</div>` : ''}
+              <div class='small' style="margin-top:6px;"><i class="fas fa-shoe-prints" style="color:#d9534f; margin-right:6px;"></i>Giày: ${o.footwear || '-'}</div>
+              ${o.accessories?.length ? `<div class='small' style="margin-top:6px;">Phụ kiện: ${(o.accessories || []).join(', ')}</div>` : ''}
+              ${o.colors?.length ? `<div class='small' style="margin-top:6px;">Màu sắc: ${(o.colors || []).join(', ')}</div>` : ''}
+              ${o.comfort_level ? `<div class='small' style="margin-top:6px;">Độ thoải mái: ${o.comfort_level}</div>` : ''}
+              ${o.notes ? `<div class='small' style="margin-top:6px;">Lưu ý: ${o.notes}</div>` : ''}
+              <div class='small' style="margin-top:6px;">Thời gian: ${outfitData.sample_time || ''} - ${outfitData.weather_note || ''}</div>
             `;
             outfitBox.style.display = 'block';
           } else {
@@ -284,13 +341,15 @@
             const ss = await sr.json();
             if (Array.isArray(ss) && ss.length) {
               const cards = ss.map(s => `
-                <div class='s-card'>
-                  <div class='s-title'>${s.name || '-'}</div>
-                  <div class='small'>Địa chỉ: ${s.address || '-'}</div>
-                  ${s.open_close ? `<div class='small'>Giờ mở cửa: ${s.open_close}</div>` : ''}
-                  ${s.type ? `<div class='small'>Loại: ${s.type}</div>` : ''}
-                  ${s.price ? `<div class='small'>Giá tham khảo: ${s.price}</div>` : ''}
-                  ${s.describe ? `<div class='small s-desc'>${s.describe}</div>` : ''}
+                <div class="cards-container">
+                  <div class="s-title">${s.name || '-'}</div>
+                  <div class="s-info">
+                    <div>Địa chỉ: ${s.address || '-'}</div>
+                    ${s.open_close ? `<div>Giờ mở cửa: ${s.open_close}</div>` : ''}
+                    ${s.type ? `<div>Loại: ${s.type}</div>` : ''}
+                    ${s.price ? `<div>Giá tham khảo: ${s.price}</div>` : ''}
+                    ${s.describe ? `<div class="s-desc">${s.describe}</div>` : ''}
+                  </div>
                 </div>
               `).join('');
               sightseeingBox.innerHTML = `
@@ -449,16 +508,35 @@
           } else {
             hotels.sort((a, b) => (b.rating ?? b.weighted_rating ?? 0) - (a.rating ?? a.weighted_rating ?? 0));
           }
-          hotelsContainer.innerHTML = hotels.map(h => `
-            <div class="hotel-card">
-              <h4>${h.name}</h4>
-              <p>${h.address || ''}</p>
-              <p>Điểm đánh giá: ${h.rating}</p>
-              <p>Lượt đánh giá: ${h.review_count}</p>
-              <p>Loại sao: ${h.stars}</p>
-              <p>Giá: ${h.price_point ?? '-'}</p>
-            </div>
-          `).join('');
+          hotelsContainer.innerHTML = hotels.map(h => {
+             // Xử lý utilities nếu là mảng
+            const utilitiesHtml = Array.isArray(h.utilities) && h.utilities.length > 0
+            ? `<div class="hotel-utilities">
+                ${h.utilities.map(u => `<span class="utility-tag">${u}</span>`).join(' ')}
+              </div>`
+            : '';
+
+            const priceFormatted = Number.isFinite(parseHotelPrice(h.price_point))
+            ? parseHotelPrice(h.price_point).toLocaleString('vi-VN') + ' VND'
+            : '-';
+
+            return `
+              <div class="hotel-card">
+                <div class="hotel-image-wrapper">
+                  <a href="${h.link || '#'}" target="_blank" rel="noopener noreferrer" title="${h.name}">
+                    <img src="${h.image || 'https://via.placeholder.com/300x180?text=No+Image'}" alt="${h.name}" class="hotel-image" />
+                  </a>
+                </div>
+                <div class="hotel-info">
+                  <h4><a href="${h.link || '#'}" target="_blank" rel="noopener noreferrer">${h.name}</a></h4>
+                  <p class="hotel-address">${h.address || ''}</p>
+                  <p class="hotel-stars">⭐ ${'★'.repeat(h.stars || 0)}${'☆'.repeat(5 - (h.stars || 0))}</p>
+                  <p>Điểm đánh giá: <strong>${h.rating ?? '-'}</strong> (${h.review_count ?? 0} đánh giá)</p>
+                  <p>Giá mỗi phòng: <strong>${priceFormatted}</strong></p>
+                </div>
+              </div>
+            `;
+          }).join('');
         } catch (err) {
           console.error(err);
           hotelsContainer.innerHTML = '<div class="small">Lỗi khi tải dữ liệu khách sạn</div>';
@@ -518,18 +596,41 @@
         }
 
                  // Render danh sách khách sạn
-         hotelsContainer.innerHTML = filtered.map(h => `
-           <div class="hotel-card">
-             <h4>${h.name}</h4>
-             <p>${h.address || ''}</p>
-             <p>Điểm đánh giá: ${h.rating}</p>
-             <p>Lượt đánh giá: ${h.review_count}</p>
-             <p>Loại sao: ${h.stars}</p>
-             <p>Giá: ${h.price_point ?? '-'}</p>
-             <p class="small">Tổng (ước tính) cho ${rooms} phòng: ${(() => { const p=parseHotelPrice(h.price_point); return Number.isFinite(p)? (p*rooms).toLocaleString('vi-VN')+' VND' : '-';})()}</p>
-             <button class="show-sightseeing" data-flight-price="${flightPrice}" data-hotel-price="${(() => { const p=parseHotelPrice(h.price_point); return Number.isFinite(p)? p*rooms : '';})()}">Xem địa điểm giải trí phù hợp</button>
-           </div>
-         `).join('');
+        hotelsContainer.innerHTML = filtered.map(h => {
+           // Xử lý utilities nếu là mảng
+          const utilitiesHtml = Array.isArray(h.utilities) && h.utilities.length > 0
+          ? `<div class="hotel-utilities">
+              ${h.utilities.map(u => `<span class="utility-tag">${u}</span>`).join(' ')}
+            </div>`
+          : '';
+
+          const priceFormatted = Number.isFinite(parseHotelPrice(h.price_point))
+          ? parseHotelPrice(h.price_point).toLocaleString('vi-VN') + ' VND'
+          : '-';
+
+          return `
+            <div class="hotel-card">
+              <div class="hotel-image-wrapper">
+                <a href="${h.link || '#'}" target="_blank" rel="noopener noreferrer" title="${h.name}">
+                  <img src="${h.image || 'https://via.placeholder.com/300x180?text=No+Image'}" alt="${h.name}" class="hotel-image" />
+                </a>
+              </div>
+              <div class="hotel-info">
+                <h4><a href="${h.link || '#'}" target="_blank" rel="noopener noreferrer">${h.name}</a></h4>
+                <p class="hotel-address">${h.address || ''}</p>
+                <p class="hotel-stars">⭐ ${'★'.repeat(h.stars || 0)}${'☆'.repeat(5 - (h.stars || 0))}</p>
+                <p>Điểm đánh giá: <strong>${h.rating ?? '-'}</strong> (${h.review_count ?? 0} đánh giá)</p>
+                <p>Giá mỗi phòng: <strong>${priceFormatted}</strong></p>
+                <p class="small">Tổng (ước tính) cho ${rooms} phòng: <strong>${(() => { 
+                  const p = parseHotelPrice(h.price_point);
+                  return Number.isFinite(p) ? (p * rooms).toLocaleString('vi-VN') + ' VND' : '-'; 
+                })()}</strong></p>
+                ${utilitiesHtml}
+                <button class="show-sightseeing" data-flight-price="${flightPrice}" data-hotel-price="${(() => { const p=parseHotelPrice(h.price_point); return Number.isFinite(p)? p*rooms : '';})()}">Xem địa điểm giải trí phù hợp</button>
+              </div>
+            </div>
+          `;
+        }).join('');
 
          // Lắng nghe click để hiển thị địa điểm du lịch theo ngân sách còn lại
          hotelsContainer.addEventListener('click', async (e) => {
@@ -581,14 +682,16 @@
              }
 
              const cards = filtered.map(s => `
-               <div class='s-card'>
-                 <div class='s-title'>${s.name || '-'}</div>
-                 <div class='small'>Địa chỉ: ${s.address || '-'}</div>
-                 ${s.open_close ? `<div class='small'>Giờ mở cửa: ${s.open_close}</div>` : ''}
-                 ${s.type ? `<div class='small'>Loại: ${s.type}</div>` : ''}
-                 ${s.price ? `<div class='small'>Giá tham khảo: ${s.price}</div>` : ''}
-                 ${s.describe ? `<div class='small s-desc'>${s.describe}</div>` : ''}
-               </div>
+              <div class="cards-container">
+                <div class="s-title">${s.name || '-'}</div>
+                <div class="s-info">
+                  <div>Địa chỉ: ${s.address || '-'}</div>
+                  ${s.open_close ? `<div>Giờ mở cửa: ${s.open_close}</div>` : ''}
+                  ${s.type ? `<div>Loại: ${s.type}</div>` : ''}
+                  ${s.price ? `<div>Giá tham khảo: ${s.price}</div>` : ''}
+                  ${s.describe ? `<div class="s-desc">${s.describe}</div>` : ''}
+                </div>
+              </div>
              `).join('');
 
              sightseeingBox.innerHTML = `

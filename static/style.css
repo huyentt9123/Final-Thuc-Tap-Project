@@ -1,184 +1,442 @@
-body { 
-  font-family: Arial, sans-serif; 
-  margin: 24px; 
+body {
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  background: #f5f7fa;
+  margin: 0;
+  padding: 20px;
+  color: #222;
 }
 
-.container { 
-  max-width: 900px; 
-  margin: 0 auto; 
+.container {
+  max-width: 900px;
+  margin: 0 auto;
+  background: #fff;
+  padding: 25px 30px;
+  border-radius: 10px;
+  box-shadow: 0 5px 15px rgb(0 0 0 / 0.1);
 }
 
-label { 
-  display: block; 
-  margin: 12px 0 6px; 
-  font-weight: 600; 
+h2 {
+  text-align: center;
+  margin-bottom: 25px;
+  color: #0077cc;
+  font-weight: 700;
 }
 
-input, select, button { 
-  padding: 8px 10px; 
-  font-size: 14px; 
+form.flight-form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
 }
 
-.row { 
-  display: grid; 
-  grid-template-columns: 1fr 1fr; 
-  gap: 16px; 
+.form-row {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
 }
 
-.row-3 { 
-  display: grid; 
-  grid-template-columns: 1fr 1fr 1fr; 
-  gap: 16px; 
+/* Hai cột bằng nhau */
+.double-row > .form-group {
+  flex: 1 1 45%;
+  min-width: 250px;
 }
 
-.row-4 { 
-  display: grid; 
-  grid-template-columns: 1fr 1fr 1fr 1fr; 
-  gap: 16px; 
+/* Bốn cột đều nhau */
+.quadruple-row > .form-group {
+  flex: 1 1 22%;
+  min-width: 140px;
+  display: flex;
+  flex-direction: column;
 }
 
-.hint { 
-  color: #666; 
-  font-size: 12px; 
-  margin-top: 4px; 
+.form-group-submit {
+  display: flex;
+  align-items: flex-end;
+  justify-content: flex-start;
 }
 
-.result { 
-  margin-top: 24px; 
+label.form-label {
+  font-weight: 600;
+  margin-bottom: 6px;
+  display: block;
 }
 
-.card { 
-  border: 1px solid #ddd; 
-  border-radius: 8px; 
-  padding: 12px; 
-  margin-bottom: 12px; 
+.required {
+  color: #d9534f;
+  margin-left: 4px;
 }
 
-.small { 
-  font-size: 12px; 
-  color: #555; 
+/* Container cho input/select + icon */
+.input-icon {
+  position: relative;
+  width: 100%;
 }
 
-.weather { 
-  margin-top: 12px; 
-  padding: 12px; 
-  background: #f7f9fc; 
-  border: 1px solid #e1e7f0; 
-  border-radius: 8px; 
+/* Input/select căn chỉnh chừa chỗ icon */
+.input-icon .form-control {
+  width: 100%;
+  padding: 10px 38px 10px 12px;
+  border: 1.8px solid #d1d9e6;
+  border-radius: 6px;
+  font-size: 1rem;
+  transition: border-color 0.3s ease;
+  box-sizing: border-box;
 }
 
-.forecast { 
-  margin-top: 12px; 
-  padding: 12px; 
-  border: 1px solid #eee; 
-  border-radius: 8px; 
+/* Tương thích cho input type number để không có mũi tên */
+input[type=number]::-webkit-inner-spin-button,
+input[type=number]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
 }
 
-.forecast-header { 
-  display: flex; 
-  justify-content: space-between; 
-  align-items: center; 
-  margin-bottom: 8px; 
+input[type=number] {
+  -moz-appearance: textfield;
 }
 
-.forecast-grid { 
-  width: 100%; 
-  border-collapse: collapse; 
+/* Icon ở bên phải */
+.input-icon .icon {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #999;
+  pointer-events: none;
+  font-size: 1.3rem;
+  transition: color 0.3s ease;
 }
 
-.forecast-grid th, .forecast-grid td { 
-  border-bottom: 1px solid #f0f0f0; 
-  padding: 6px 8px; 
-  text-align: left; 
-  font-size: 14px; 
+/* Khi input/select focus thì đổi màu icon */
+.input-icon .form-control:focus {
+  border-color: #0077cc;
+  outline: none;
 }
 
-.nav-btn { 
-  cursor: pointer; 
-  padding: 6px 10px; 
-  border: 1px solid #ddd; 
-  background: #fff; 
-  border-radius: 6px; 
+.input-icon .form-control:focus + .icon {
+  color: #0077cc;
 }
 
-.nav-btn:disabled { 
-  opacity: .5; 
-  cursor: not-allowed; 
+/* Gợi ý nhỏ */
+small.hint {
+  font-size: 0.85rem;
+  color: #666;
+  margin-top: 3px;
+  display: block;
 }
 
-.outfit { 
-  margin-top: 12px; 
-  padding: 12px; 
-  background: #fffaf5; 
-  border: 1px solid #f0e2cf; 
-  border-radius: 8px; 
+/* Nút submit */
+button.btn-submit {
+  background-color: #0077cc;
+  color: white;
+  border: none;
+  padding: 12px 25px;
+  border-radius: 6px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.25s ease;
 }
 
-.tag { 
-  display: inline-block; 
-  background: #f1f5f9; 
-  border-radius: 999px; 
-  padding: 2px 8px; 
-  margin: 2px 4px 0 0; 
-  font-size: 12px; 
+button.btn-submit:hover {
+  background-color: #005fa3;
 }
 
-.search-summary {
-  margin-bottom: 16px;
-  padding: 16px;
-  background: #f8fffe;
-  border: 1px solid #d1fae5;
+/* Card kết quả chuyến bay */
+.card {
+  border: 1px solid #d1d9e6;
+  border-radius: 8px;
+  padding: 15px 20px;
+  margin-bottom: 15px;
+  background: #f9fbff;
+  box-shadow: 1px 1px 5px rgb(0 0 0 / 0.05);
+}
+
+.card .small {
+  color: #555;
+  font-size: 0.9rem;
+  margin-top: 4px;
+}
+
+.card strong {
+  color: #0077cc;
+}
+
+.card button.show-hotels {
+  margin-top: 10px;
+  background-color: #0077cc;
+  border: none;
+  color: white;
+  padding: 8px 15px;
+  border-radius: 5px;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.card button.show-hotels:hover {
+  background-color: #005fa3;
+}
+
+/* Khách sạn */
+.hotel-card {
+  display: flex;
+  gap: 15px;
+  margin-top: 12px;
+  border-top: 1px solid #ccc;
+  padding-top: 12px;
+}
+
+.hotel-image-wrapper {
+  flex-shrink: 0;
+  width: 140px;
+  height: 90px;
+  overflow: hidden;
+  border-radius: 8px;
+  box-shadow: 0 2px 6px rgb(0 0 0 / 0.12);
+}
+
+.hotel-image-wrapper img.hotel-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s ease;
   border-radius: 8px;
 }
 
-.search-summary h3 {
-  margin: 0 0 8px 0;
-  color: #047857;
+.hotel-image-wrapper img.hotel-image:hover {
+  transform: scale(1.05);
+}
+
+.hotel-info h4 {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #0077cc;
+  margin-bottom: 5px;
+}
+
+.hotel-info h4 a {
+  text-decoration: none;
+  color: inherit;
+}
+
+.hotel-info h4 a:hover {
+  text-decoration: underline;
+}
+
+.hotel-info p {
+  margin: 2px 0;
+  font-size: 0.9rem;
+  color: #444;
+}
+
+.hotel-stars {
+  color: #f5a623;
+  font-size: 1.1rem;
+  letter-spacing: 0.07em;
+}
+
+.hotel-utilities {
+  margin-top: 5px;
+}
+
+.utility-tag {
+  display: inline-block;
+  background-color: #0077cc;
+  color: white;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 0.8rem;
+  margin-right: 6px;
+  margin-top: 6px;
+}
+
+/* Responsive */
+@media (max-width: 700px) {
+  .double-row > .form-group {
+    flex-basis: 100%;
+  }
+
+  .quadruple-row > .form-group {
+    flex-basis: 48%;
+  }
+
+  .form-row {
+    gap: 12px;
+  }
+}
+
+@media (max-width: 400px) {
+  .quadruple-row > .form-group {
+    flex-basis: 100%;
+  }
+}
+
+.weather, .outfit {
+  margin-top: 30px;
+  padding: 20px;
+  background: linear-gradient(135deg, #a3d5ff, #d0e9ff);
+  border-radius: 12px;
+  box-shadow: 0 5px 12px rgba(0, 0, 0, 0.12);
+  color: #0c3c78;
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 1.5;
+  position: relative;
+}
+
+.weather strong, .outfit strong {
+  color: #065293;
   font-size: 18px;
 }
 
-.search-summary div {
-  margin: 4px 0;
+.weather .icon, .outfit .icon {
+  font-size: 32px;
+  vertical-align: middle;
+  margin-right: 10px;
+  color: #1e90ff;
+}
+
+.weather .temp {
+  font-size: 28px;
+  font-weight: 700;
+  color: #074a8f;
+  margin-left: 5px;
+}
+
+.tag {
+  display: inline-block;
+  background-color: #1a73e8;
+  color: white;
+  padding: 5px 12px;
+  margin: 6px 8px 6px 0;
+  border-radius: 20px;
+  font-size: 15px;
+  box-shadow: 0 2px 6px rgb(26 115 232 / 0.6);
+}
+
+.small {
   font-size: 14px;
-  color: #374151;
+  color: #044a8a;
+  margin-top: 7px;
 }
-.hotel-card {
-  border: 1px solid #ccc;
-  margin: 10px 0;
-  padding: 10px;
-  border-radius: 6px;
-}
-.hotel-card h4 {
-  margin: 0 0 5px;
-}
-.sightseeing {
-  margin-top: 16px;
-  padding: 12px;
-  background: #f7fdfb;
-  border: 1px solid #d1fae5;
-  border-radius: 8px;
-}
-.section-header {
-  margin-bottom: 8px;
-}
-.sightseeing-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
+
+/* Thêm background icon thời tiết dựa theo mô tả */
+.weather-description {
+  display: flex;
+  align-items: center;
   gap: 12px;
-}
-@media (max-width: 700px) {
-  .sightseeing-grid { grid-template-columns: 1fr; }
-}
-.s-card {
-  border: 1px solid #e5e7eb;
-  border-radius: 8px;
-  padding: 10px;
-  background: #fff;
-}
-.s-title {
+  margin-top: 10px;
   font-weight: 600;
-  margin-bottom: 4px;
+  font-style: italic;
+}
+
+/* Một số icon thời tiết phổ biến */
+.icon-sunny { color: #f7b500; }
+.icon-cloudy { color: #7f8c8d; }
+.icon-rain { color: #3498db; }
+.icon-storm { color: #34495e; }
+.icon-snow { color: #5dade2; }
+
+
+/* Thời tiết hiện tại, gợi ý trang phục, dự báo */
+.forecast {
+  margin-top: 30px;
+  padding: 20px;
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgb(0 0 0 / 0.1);
+  color: #333;
+  font-size: 15px;
+  line-height: 1.4;
+}
+
+/* Tag cho trang phục */
+
+/* Text nhỏ */
+
+
+/* Bảng dự báo thời tiết */
+.forecast-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+  font-weight: 700;
+  color: #1a73e8;
+  font-size: 18px;
+}
+
+.forecast-header button.nav-btn {
+  background: #1a73e8;
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  margin-left: 6px;
+  border-radius: 6px;
+  cursor: pointer;
+  user-select: none;
+  font-size: 18px;
+}
+
+.forecast-header button.nav-btn:hover {
+  background: #155ab6;
+}
+
+.forecast-grid {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+  color: #222;
+}
+
+.forecast-grid th,
+.forecast-grid td {
+  border: 1px solid #ddd;
+  padding: 6px 10px;
+  text-align: center;
+}
+
+.forecast-grid th {
+  background-color: #f0f6ff;
+  font-weight: 600;
+}
+
+.sightseeing-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  /* display: flex;
+  gap: 16px;
+  flex-wrap: wrap; */
+}
+.cards-container {
+  background: white;
+  border-radius: 10px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  font-family: Arial, sans-serif;
+  flex: 1 1 calc(33.333% - 16px); /* mỗi thẻ rộng ~1/3 container, trừ khoảng cách */
+  box-sizing: border-box;
+
+}
+
+.s-title {
+  font-weight: 700;
+  font-size: 1.1rem;
+  padding: 10px 12px 6px;
+}
+.s-info {
+  padding: 0 12px 12px;
+  color: #444;
+  font-size: 0.9rem;
+  flex-grow: 1;
+}
+.s-info div {
+  margin-bottom: 6px;
 }
 .s-desc {
-  margin-top: 6px;
+  font-style: italic;
+  color: #666;
 }
