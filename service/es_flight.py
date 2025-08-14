@@ -40,7 +40,8 @@ def convert_price_to_vnd(price: float, currency: str) -> int:
     else:
         # Mặc định coi như USD nếu không biết loại tiền tệ
         return int(round(price * USD_TO_VND_RATE))
-
+    
+# map từ Amadeus offer sang FlightOffer model
 def map_amadeus_to_model(offer: dict, origin: str, destination: str, departure_date: str, adults: int) -> FlightOffer:
     segments = []
     for itinerary in offer.get("itineraries", []):

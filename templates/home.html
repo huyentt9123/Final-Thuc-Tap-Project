@@ -14,9 +14,8 @@
 
 <body>
   <div class="container">
-    <h2>Lên kế hoạch</h2>
-
     <form id="flightForm" class="flight-form">
+      <h2 >Lên kế hoạch</h2>
       <div class="form-row">
         <div class="form-group">
           <label for="origin" class="form-label">Sân bay phù hợp với bạn <span class="required">*</span></label>
@@ -118,12 +117,15 @@
         </div>
       </div>
     </form>
-
-    <div id="weatherBox" class="weather" style="display:none"></div>
-    <div id="outfitBox" class="outfit" style="display:none"></div>
-    <div id="forecastBox" class="forecast" style="display:none"></div>
+    <div class="weather-header">
+      <div id="weatherBox" class=" left weather" style="display:none"></div>
+      <div id="outfitBox" class="left outfit" style="display:none"></div>
+      <div id="forecastBox" class="forecast" style="display:none"></div>
+    </div>
+    <div class="kq">
     <div class="result" id="result"></div>
     <div id="sightseeingBox" class="sightseeing" style="display:none"></div>
+    </div>
   </div>
 
   <script>
@@ -439,7 +441,7 @@
           <div style="margin-top:8px;">
             <button class="show-hotels" data-index="${index}" data-price="${item.price}">Xem khách sạn phù hợp</button>
           </div>
-          <div id="hotels-for-${index}" style="margin-top:10px;"></div>
+          <div id="hotels-for-${index}" class="hotelss" style="margin-top:10px;"></div>
         </div>
       `;
     }
@@ -478,6 +480,12 @@
       const idx = btn.getAttribute('data-index');
       const flightPrice = parseInt(btn.getAttribute('data-price'), 10) || 0;
       const hotelsContainer = document.getElementById(`hotels-for-${idx}`);
+      if (hotelsContainer.style.display === 'block') {
+        hotelsContainer.style.display = 'none';
+        hotelsContainer.innerHTML = '';
+        return;
+      }
+      hotelsContainer.style.display = 'block';
       const hotelTypeVal = document.getElementById('hotelType').value || '';
       const budgetVal = document.getElementById('budget').value || '';
       const rooms = Math.max(1, parseInt((document.getElementById('rooms').value || '1'), 10));
